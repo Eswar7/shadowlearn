@@ -1,0 +1,128 @@
+{
+  "id": "lesson-01",
+  "title": "Basic Kannada Greetings & Introductions",
+  "description": "Learn essential Kannada greetings and introduce yourself",
+  "language": "kannada",
+  "targetAudience": "English speakers",
+  "youtubeVideoId": "JbwR33whpEk",
+  "phrases": [
+    {
+      "id": 1,
+      "startTime": 0,
+      "endTime": 3,
+      "kannada": "ನಮಸ್ಕಾರ",
+      "transliteration": "Namaskara",
+      "english": "Hello / Greetings",
+      "words": [
+        "namaskara"
+      ]
+    },
+    {
+      "id": 2,
+      "startTime": 3,
+      "endTime": 6,
+      "kannada": "ನೀವು ಹೇಗಿದ್ದೀರಿ",
+      "transliteration": "Neevu hegiddiri",
+      "english": "How are you?",
+      "words": [
+        "neevu",
+        "hegiddiri"
+      ]
+    },
+    {
+      "id": 3,
+      "startTime": 6,
+      "endTime": 9,
+      "kannada": "ನಾನು ಚೆನ್ನಾಗಿದ್ದೇನೆ",
+      "transliteration": "Naanu chennagiddene",
+      "english": "I am fine",
+      "words": [
+        "naanu",
+        "chennagiddene"
+      ]
+    },
+    {
+      "id": 4,
+      "startTime": 9,
+      "endTime": 12,
+      "kannada": "ನಿಮ್ಮ ಹೆಸರು ಏನು",
+      "transliteration": "Nimma hesaru enu",
+      "english": "What is your name?",
+      "words": [
+        "nimma",
+        "hesaru",
+        "enu"
+      ]
+    },
+    {
+      "id": 5,
+      "startTime": 12,
+      "endTime": 16,
+      "kannada": "ನನ್ನ ಹೆಸರು ...",
+      "transliteration": "Nanna hesaru ...",
+      "english": "My name is ...",
+      "words": [
+        "nanna",
+        "hesaru"
+      ]
+    },
+    {
+      "id": 6,
+      "startTime": 16,
+      "endTime": 19,
+      "kannada": "ಧನ್ಯವಾದಗಳು",
+      "transliteration": "Dhanyavaadagalu",
+      "english": "Thank you",
+      "words": [
+        "dhanyavaadagalu"
+      ]
+    },
+    {
+      "id": 7,
+      "startTime": 19,
+      "endTime": 22,
+      "kannada": "ದಯವಿಟ್ಟು",
+      "transliteration": "Dayavittu",
+      "english": "Please",
+      "words": [
+        "dayavittu"
+      ]
+    },
+    {
+      "id": 8,
+      "startTime": 22,
+      "endTime": 25,
+      "kannada": "ಕ್ಷಮಿಸಿ",
+      "transliteration": "Kshamisi",
+      "english": "Sorry / Excuse me",
+      "words": [
+        "kshamisi"
+      ]
+    },
+    {
+      "id": 9,
+      "startTime": 25,
+      "endTime": 29,
+      "kannada": "ನನಗೆ ಕನ್ನಡ ಬರುವುದಿಲ್ಲ",
+      "transliteration": "Nanage kannada baruvudilla",
+      "english": "I don't know Kannada",
+      "words": [
+        "nanage",
+        "kannada",
+        "baruvudilla"
+      ]
+    },
+    {
+      "id": 10,
+      "startTime": 29,
+      "endTime": 32,
+      "kannada": "ಹೋಗಿ ಬರುತ್ತೇನೆ",
+      "transliteration": "Hogi baruttene",
+      "english": "Goodbye (I'll go and come back)",
+      "words": [
+        "hogi",
+        "baruttene"
+      ]
+    }
+  ]
+}

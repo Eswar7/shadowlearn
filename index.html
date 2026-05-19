@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ShadowLearn — Learn Kannada by shadowing native speakers. Watch, listen, speak, and get instant pronunciation feedback.">
+  <title>ShadowLearn — Learn Kannada Through Shadowing</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗣️</text></svg>">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="app-logo">
+      <div class="app-logo-icon">🗣️</div>
+      <span class="app-logo-text">ShadowLearn</span>
+    </div>
+    <div class="lesson-info">
+      <span class="lesson-title" id="lessonTitle">Loading lesson...</span>
+      <span class="language-badge" id="languageBadge">
+        <span>🇮🇳</span>
+        <span id="languageBadgeText">Kannada</span>
+      </span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-header" id="btnMyLanguages" title="View your enrolled language curriculums">
+        📚 My Languages
+      </button>
+      <button class="btn btn-header" id="btnNewLesson" title="Generate a new one-off lesson with AI">
+        ✨ New Lesson
+      </button>
+      <button class="btn btn-header btn-icon-only" id="btnSettings" title="LLM Settings">
+        ⚙️
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="app-main">
+
+    <!-- Dashboard View (My Languages) -->
+    <div class="dashboard-view" id="dashboardView" style="display: none;">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">📚 My Languages</h1>
+        <button class="btn btn-primary" id="btnEnrollLanguage">➕ Enroll New Language</button>
+      </div>
+      
+      <!-- List of enrolled languages -->
+      <div class="language-grid" id="languageGrid">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Curriculum Detail View -->
+      <div class="curriculum-view" id="curriculumView" style="display: none;">
+        <button class="btn btn-secondary" id="btnBackToDashboard">← Back to Languages</button>
+        <h2 class="curriculum-title" id="curriculumTitle">Language Plan</h2>
+        <div class="modules-list" id="modulesList">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Practice View -->
+    <div class="practice-view" id="practiceView">
+      <!-- Left: Video + Practice Controls -->
+      <div class="video-section">
+      <div class="video-container" id="videoContainer">
+        <div id="player"></div>
+        <div class="video-overlay" id="videoOverlay">
+          <div class="video-overlay-text">
+            <span>🎤</span>
+            <span>Your turn — speak now!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Practice Bar -->
+      <div class="practice-bar">
+        <!-- Current phrase display -->
+        <div class="practice-phrase" id="practicePhrase">
+          <div class="practice-phrase-transliteration" id="practicePhraseText">
+            Select a phrase to practice
+          </div>
+          <div class="practice-phrase-english" id="practicePhraseEnglish"></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="practice-controls">
+          <button class="btn btn-icon btn-secondary" id="btnPrev" title="Previous phrase" disabled>
+            ◀
+          </button>
+          <button class="btn btn-icon btn-secondary" id="btnListen" title="Listen to pronunciation" disabled>
+            🔊
+          </button>
+          <button class="btn btn-icon btn-secondary" id="btnReplay" title="Replay phrase" disabled>
+            🔄
+          </button>
+          <button class="btn btn-record" id="btnRecord" title="Record your speech" disabled>
+            🎤
+          </button>
+          <button class="btn btn-icon btn-secondary" id="btnNext" title="Next phrase" disabled>
+            ▶
+          </button>
+          <button class="btn btn-complete-module" id="btnMarkComplete" title="Mark this module as complete" style="display:none;">
+            ✅ Done
+          </button>
+        </div>
+
+        <!-- Status -->
+        <div class="status-bar" id="statusBar">
+          <div class="loading-spinner"></div>
+          <span>Loading lesson...</span>
+        </div>
+
+        <!-- Score Section -->
+        <div class="score-section" id="scoreSection">
+          <!-- Spoken text -->
+          <div class="spoken-text">
+            <div class="spoken-text-label">You said:</div>
+            <div class="spoken-text-content" id="spokenText">—</div>
+          </div>
+
+          <!-- Score display -->
+          <div class="score-header">
+            <div class="score-circle" id="scoreCircle">
+              <span id="scoreValue">0%</span>
+            </div>
+            <div class="score-label">
+              <strong id="scoreMessage">Keep trying!</strong><br>
+              Word accuracy score
+            </div>
+          </div>
+
+          <!-- Word breakdown -->
+          <div class="score-words" id="scoreWords"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Transcript Panel -->
+    <aside class="transcript-section">
+      <div class="transcript-header">
+        <h2 class="transcript-title">📜 Transcript</h2>
+        <div class="transcript-progress" id="transcriptProgress">
+          <span>0 / 0 practiced</span>
+        </div>
+      </div>
+      <div class="transcript-list" id="transcriptList">
+        <!-- Phrase cards will be dynamically inserted here -->
+      </div>
+    </aside>
+
+    </div><!-- End Practice View -->
+  </main>
+
+  <!-- Browser Warning -->
+  <div class="browser-warning" id="browserWarning">
+    ⚠️ Speech recognition requires <strong>Google Chrome</strong> on desktop or Android. 
+    Some features may not work in your current browser.
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2>⚙️ LLM Settings</h2>
+        <button class="modal-close" id="settingsClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Provider</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="llmProvider" value="ollama" checked>
+              <span class="radio-label">🖥️ Ollama <small>(Local)</small></span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="llmProvider" value="gemini">
+              <span class="radio-label">🌐 Gemini <small>(Cloud)</small></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Ollama Settings -->
+        <div class="provider-settings" id="ollamaSettings">
+          <div class="form-group">
+            <label class="form-label" for="ollamaEndpoint">Endpoint URL</label>
+            <input type="text" class="form-input" id="ollamaEndpoint" value="http://localhost:11434" placeholder="http://localhost:11434">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ollamaModel">Model</label>
+            <input type="text" class="form-input" id="ollamaModel" value="llama3.2" placeholder="e.g., llama3.2, mistral">
+          </div>
+        </div>
+
+        <!-- Gemini Settings -->
+        <div class="provider-settings" id="geminiSettings" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="geminiApiKey">API Key</label>
+            <input type="password" class="form-input" id="geminiApiKey" placeholder="Enter your Gemini API key">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="geminiModel">Model</label>
+            <input type="text" class="form-input" id="geminiModel" value="gemini-2.5-flash" placeholder="e.g., gemini-2.5-flash">
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>Cloud Text-to-Speech</h3>
+          <p class="settings-help">For guaranteed ultra-realistic native voice pronunciations (disables standard browser TTS).</p>
+          <div class="form-group">
+            <label class="form-label" for="openaiTtsKey">OpenAI API Key (European Langs)</label>
+            <input type="password" class="form-input" id="openaiTtsKey" placeholder="sk-...">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reverieAppId">Reverie App ID (Indian Langs)</label>
+            <input type="text" class="form-input" id="reverieAppId" placeholder="REV...">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reverieApiKey">Reverie API Key</label>
+            <input type="password" class="form-input" id="reverieApiKey" placeholder="Your API Key...">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <button class="btn btn-secondary btn-full" id="btnTestConnection">🔌 Test Connection</button>
+          <div class="connection-status" id="connectionStatus"></div>
+        </div>
+        <div class="settings-section data-safety-section">
+          <h3>💾 Data Safety</h3>
+          <p class="settings-help">Your progress, curriculums, and lessons are stored in your browser. Export a backup regularly to prevent data loss if you clear your browser or switch between <code>file://</code> and <code>localhost</code>.</p>
+          <div class="data-safety-size" id="storageSizeLabel">Calculating…</div>
+          <div class="data-safety-actions">
+            <button class="btn btn-secondary" id="btnExportData">⬇️ Export Backup</button>
+            <button class="btn btn-secondary" id="btnImportData">⬆️ Import Backup</button>
+          </div>
+          <div class="data-safety-status" id="dataSafetyStatus"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="settingsCancel">Cancel</button>
+        <button class="btn btn-primary" id="settingsSave">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Lesson Modal -->
+  <div class="modal-overlay" id="createLessonModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2>✨ Generate New Lesson</h2>
+        <button class="modal-close" id="createLessonClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="lessonTopic">Topic</label>
+          <input type="text" class="form-input" id="lessonTopic" placeholder="e.g., Ordering food at a restaurant">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="targetLanguage">I want to learn</label>
+            <select class="form-input" id="targetLanguage">
+              <option value="Kannada">🇮🇳 Kannada</option>
+              <option value="Hindi">🇮🇳 Hindi</option>
+              <option value="Tamil">🇮🇳 Tamil</option>
+              <option value="Telugu">🇮🇳 Telugu</option>
+              <option value="Malayalam">🇮🇳 Malayalam</option>
+              <option value="Marathi">🇮🇳 Marathi</option>
+              <option value="Bengali">🇮🇳 Bengali</option>
+              <option value="Gujarati">🇮🇳 Gujarati</option>
+              <option value="Punjabi">🇮🇳 Punjabi</option>
+              <option value="Japanese">🇯🇵 Japanese</option>
+              <option value="Korean">🇰🇷 Korean</option>
+              <option value="Spanish">🇪🇸 Spanish</option>
+              <option value="French">🇫🇷 French</option>
+              <option value="German">🇩🇪 German</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sourceLanguage">I speak</label>
+            <select class="form-input" id="sourceLanguage">
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Kannada">Kannada</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="phraseCount">Number of phrases: <span id="phraseCountValue">10</span></label>
+          <input type="range" class="form-range" id="phraseCount" min="3" max="20" value="10">
+        </div>
+        <div class="generate-status" id="generateStatus"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="createLessonCancel">Cancel</button>
+        <button class="btn btn-primary" id="btnGenerateLesson">🚀 Generate Lesson</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enroll Language Modal -->
+  <div class="modal-overlay" id="enrollModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2>📚 Enroll in a Language</h2>
+        <button class="modal-close" id="enrollClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="settings-help">The AI will generate a complete 10-module curriculum from scratch natively designed for your proficiency level.</p>
+        <div class="form-row" style="margin-top: 20px;">
+          <div class="form-group">
+            <label class="form-label" for="enrollTargetLanguage">I want to learn</label>
+            <select class="form-input" id="enrollTargetLanguage">
+              <optgroup label="Indian Languages">
+                <option value="Kannada">🇮🇳 Kannada</option>
+                <option value="Hindi">🇮🇳 Hindi</option>
+                <option value="Tamil">🇮🇳 Tamil</option>
+                <option value="Telugu">🇮🇳 Telugu</option>
+                <option value="Malayalam">🇮🇳 Malayalam</option>
+                <option value="Marathi">🇮🇳 Marathi</option>
+                <option value="Bengali">🇮🇳 Bengali</option>
+                <option value="Gujarati">🇮🇳 Gujarati</option>
+                <option value="Punjabi">🇮🇳 Punjabi</option>
+              </optgroup>
+              <optgroup label="Global Languages">
+                <option value="Japanese">🇯🇵 Japanese</option>
+                <option value="Korean">🇰🇷 Korean</option>
+                <option value="Spanish">🇪🇸 Spanish</option>
+                <option value="French">🇫🇷 French</option>
+                <option value="German">🇩🇪 German</option>
+                <option value="Dutch">🇳🇱 Dutch</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="enrollSourceLanguage">I speak</label>
+            <select class="form-input" id="enrollSourceLanguage">
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Kannada">Kannada</option>
+            </select>
+          </div>
+        </div>
+        <div class="generate-status" id="enrollStatus"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="enrollCancel">Cancel</button>
+        <button class="btn btn-primary" id="btnGenerateCurriculum">🚀 Generate Curriculum</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage-manager.js"></script>
+  <script src="js/llm-provider.js"></script>
+  <script src="js/curriculum-generator.js"></script>
+  <script src="js/lesson-generator.js"></script>
+  <script src="js/cloud-tts.js"></script>
+  <script src="js/reverie-tts.js"></script>
+  <script src="js/tts.js"></script>
+  <script src="js/scorer.js"></script>
+  <script src="js/recorder.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/transcript.js"></script>
+  <script src="js/gamification.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
