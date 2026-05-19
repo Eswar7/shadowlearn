@@ -154,6 +154,9 @@ const App = (() => {
 
         // Keyboard shortcuts
         document.addEventListener('keydown', handleKeyboard);
+
+        // Touch swipe gestures for mobile phrase navigation
+        _initSwipeGestures();
         
         // Wire up UI state routers
         initModals();
@@ -1160,6 +1163,45 @@ const App = (() => {
         if (d) d.style.display = 'none';
         const p = document.getElementById('practiceView');
         if (p) p.style.display = 'grid';
+    }
+
+    // ── Touch Swipe Gestures (mobile phrase navigation) ────────────────
+    function _initSwipeGestures() {
+        let _touchStartX = 0;
+        let _touchStartY = 0;
+        const SWIPE_THRESHOLD = 60;  // px minimum horizontal travel
+        const ANGLE_LIMIT     = 40;  // degrees: reject if too vertical
+
+        const practiceEl = document.getElementById('practiceView');
+        if (!practiceEl) return;
+
+        practiceEl.addEventListener('touchstart', (e) => {
+            _touchStartX = e.changedTouches[0].clientX;
+            _touchStartY = e.changedTouches[0].clientY;
+        }, { passive: true });
+
+        practiceEl.addEventListener('touchend', (e) => {
+            // Only act when a lesson is loaded
+            if (!state.lessonData) return;
+
+            const dx = e.changedTouches[0].clientX - _touchStartX;
+            const dy = e.changedTouches[0].clientY - _touchStartY;
+
+            // Ignore if swipe is mostly vertical (user is scrolling transcript)
+            if (Math.abs(dy) > Math.abs(dx) * Math.tan((ANGLE_LIMIT * Math.PI) / 180)) return;
+
+            if (Math.abs(dx) < SWIPE_THRESHOLD) return; // too short
+
+            if (dx < 0) {
+                // Swipe left → next phrase
+                _cancelAutoAdvance();
+                navigatePhrase(1);
+            } else {
+                // Swipe right → previous phrase
+                _cancelAutoAdvance();
+                navigatePhrase(-1);
+            }
+        }, { passive: true });
     }
 
     // Initialize on DOM ready

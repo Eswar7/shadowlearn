@@ -706,48 +706,248 @@ body::before {
   to { transform: rotate(360deg); }
 }
 
-/* --- Responsive Design --- */
+/* ==============================================
+   RESPONSIVE DESIGN — Mobile First
+   Breakpoints: 900px (tablet), 600px (mobile)
+   ============================================== */
+
+/* ── Tablet (≤ 900px) ── */
 @media (max-width: 900px) {
+
+  /* Stack practice view vertically */
   .practice-view {
     grid-template-columns: 1fr;
+    gap: var(--space-md);
   }
 
   .app-main {
     padding: var(--space-md);
   }
-}
 
   .app-header {
-    padding: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
     flex-wrap: wrap;
     gap: var(--space-sm);
   }
 
+  /* Transcript becomes a fixed-height scrollable block below practice */
   .transcript-section {
-    max-height: 50vh;
+    max-height: 45vh;
+    min-height: 220px;
   }
 
   .practice-phrase-transliteration {
     font-size: var(--font-size-xl);
   }
-}
 
-@media (max-width: 600px) {
-  .practice-controls {
+  /* Module cards stack vertically */
+  .module-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .module-actions {
+    width: 100%;
+    justify-content: flex-end;
     flex-wrap: wrap;
   }
 
-  .lesson-info {
-    flex-wrap: wrap;
+  /* Dashboard padding */
+  .dashboard-view {
+    padding: var(--space-md);
+  }
+}
+
+/* ── Mobile (≤ 600px) ── */
+@media (max-width: 600px) {
+
+  /* Header: logo + badge row, actions row */
+  .app-header {
+    padding: var(--space-sm);
+    gap: var(--space-xs);
   }
 
   .app-logo-text {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-md);
+  }
+
+  .lesson-info {
+    display: none; /* hide lesson title on very small screens */
   }
 
   .header-actions {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  /* Shrink header buttons */
+  .btn-header {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+
+  /* XP badge compact */
+  .xp-badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    gap: 4px;
+  }
+
+  /* Practice bar tighter */
+  .practice-bar {
+    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-sm);
+  }
+
+  .practice-phrase-transliteration {
+    font-size: var(--font-size-lg);
+  }
+
+  /* Bigger, more touch-friendly control buttons */
+  .practice-controls {
+    gap: var(--space-sm);
+    justify-content: center;
+  }
+
+  .btn-icon {
+    width: 52px;
+    height: 52px;
+    font-size: var(--font-size-xl);
+  }
+
+  .btn-record {
+    width: 64px;
+    height: 64px;
+    font-size: var(--font-size-2xl);
+  }
+
+  /* Mark complete button full-width on mobile */
+  .btn-complete-module {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Score section compact */
+  .score-header {
+    gap: var(--space-sm);
+  }
+
+  .score-circle {
+    width: 52px;
+    height: 52px;
+    font-size: var(--font-size-lg);
+  }
+
+  .score-words {
+    gap: var(--space-xs);
+  }
+
+  /* Transcript: shorter on mobile so controls visible */
+  .transcript-section {
+    max-height: 38vh;
+    min-height: 180px;
+  }
+
+  /* Phrase cards touch-optimised */
+  .phrase-card {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .phrase-transliteration {
+    font-size: var(--font-size-md);
+  }
+
+  /* Dashboard: single column, compact header */
+  .dashboard-view {
+    padding: var(--space-sm);
+    height: auto;
+    min-height: calc(100vh - 60px);
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+
+  .dashboard-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .language-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+
+  /* Curriculum / module list */
+  .curriculum-title {
+    font-size: var(--font-size-xl);
+    margin-block: var(--space-sm);
+  }
+
+  .module-card {
+    padding: var(--space-md);
+  }
+
+  .module-info h4 {
+    font-size: 1rem;
+  }
+
+  /* Modals full-screen on mobile */
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end; /* slide up from bottom */
+  }
+
+  .modal-dialog {
+    max-width: 100%;
+    width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+
+  /* Practice mode card (TTS mode) */
+  .practice-mode-card {
+    padding: var(--space-lg) var(--space-md);
+    min-height: 140px;
+  }
+
+  .practice-mode-native {
+    font-size: var(--font-size-2xl);
+  }
+
+  .practice-mode-translit {
+    font-size: var(--font-size-lg);
+  }
+
+  /* Daily goal ring smaller on mobile */
+  .daily-goal-widget svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Streak banner compact */
+  .streak-banner {
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-size-xs);
+  }
+
+  /* Auto-advance bar */
+  .auto-advance-bar {
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  /* Toast doesn't overflow */
+  .sl-toast {
+    white-space: normal;
+    text-align: center;
+    max-width: 90vw;
   }
 }
 
