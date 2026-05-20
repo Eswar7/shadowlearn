@@ -28,6 +28,8 @@ const App = (() => {
         dom.btnNext = document.getElementById('btnNext');
         dom.btnReplay = document.getElementById('btnReplay');
         dom.btnRecord = document.getElementById('btnRecord');
+        dom.btnListen = document.getElementById('btnListen');
+        dom.btnAutoPlay = document.getElementById('btnAutoPlay');
         dom.statusBar = document.getElementById('statusBar');
         dom.scoreSection = document.getElementById('scoreSection');
         dom.scoreCircle = document.getElementById('scoreCircle');
@@ -63,7 +65,6 @@ const App = (() => {
 
         // New DOM elements for Practice Mode / Modals
         dom.languageBadgeText = document.getElementById('languageBadgeText');
-        dom.btnListen = document.getElementById('btnListen');
         dom.videoSection = document.querySelector('.video-section');
         dom.videoContainer = document.getElementById('videoContainer');
         
@@ -132,6 +133,9 @@ const App = (() => {
 
             Recorder.onResult((result) => {
                 handleSpeechResult(result);
+                if (state.autoPlaying) {
+                    setTimeout(() => _autoPlayNext(), 1500);
+                }
             });
 
             Recorder.onError((message) => {
@@ -149,8 +153,10 @@ const App = (() => {
 
         // Wire up core practice buttons
         dom.btnRecord.addEventListener('click', handleRecord);
+        dom.btnListen.addEventListener('click', handleListen);
         dom.btnPrev.addEventListener('click', () => navigatePhrase(-1));
         dom.btnNext.addEventListener('click', () => navigatePhrase(1));
+        dom.btnAutoPlay.addEventListener('click', toggleAutoPlay);
 
         // Keyboard shortcuts
         document.addEventListener('keydown', handleKeyboard);
@@ -709,13 +715,19 @@ const App = (() => {
         }
 
         setMode('scored');
-        setStatus(scoreResult.message + ' Press 🎤 to try again or ▶ for the next phrase.');
 
-        // ── Smart Auto-Advance ─────────────────────────────────────────────
-        // If score is 70%+, automatically move to the next phrase after 2 s.
-        // A thin progress bar under the score section acts as the countdown.
-        if (scoreResult.overallScore >= 70) {
-            _startAutoAdvance();
+        // ── Auto Play: always advance after 1.5 s (score doesn't block flow) ──
+        if (_autoPlaying) {
+            if (_autoPlayMicTimer) { clearTimeout(_autoPlayMicTimer); _autoPlayMicTimer = null; }
+            _autoPlayExpectingResult = false;
+            setStatus(`${scoreResult.message} — ⏭ Next phrase in 1.5s…`);
+            setTimeout(() => { if (_autoPlaying) _autoPlayNext(); }, 1500);
+        } else {
+            setStatus(scoreResult.message + ' Press 🎤 to try again or ▶ for the next phrase.');
+            // Smart Auto-Advance: score ≥ 70% moves to next after 2 s
+            if (scoreResult.overallScore >= 70) {
+                _startAutoAdvance();
+            }
         }
     }
 
@@ -771,6 +783,117 @@ const App = (() => {
         }
         const bar = document.getElementById('autoAdvanceBar');
         if (bar) bar.style.display = 'none';
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  AUTO PLAY — hands-free practice loop
+    //  Flow: TTS speaks → mic opens → user repeats → score → next phrase
+    // ══════════════════════════════════════════════════════════════════
+    let _autoPlaying            = false;
+    let _autoPlayMicTimer       = null;
+    let _autoPlayExpectingResult= false;
+    let _wakeLock               = null;   // Screen Wake Lock API
+
+    /** Toggle auto play on/off */
+    function toggleAutoPlay() {
+        if (_autoPlaying) {
+            stopAutoPlay();
+        } else {
+            startAutoPlay();
+        }
+    }
+
+    function startAutoPlay() {
+        if (!state.lessonData) return;
+
+        _autoPlaying = true;
+
+        // Update button
+        dom.btnAutoPlay.textContent = '⏸ Pause';
+        dom.btnAutoPlay.classList.add('btn-auto-active');
+        dom.practiceBar?.classList.add('auto-play-active');
+
+        // Prevent screen from sleeping (walking use-case)
+        if ('wakeLock' in navigator) {
+            navigator.wakeLock.request('screen')
+                .then(lock => { _wakeLock = lock; })
+                .catch(() => {});
+        }
+
+        // Start from current phrase (or phrase 0)
+        const startIdx = state.currentPhraseIndex >= 0 ? state.currentPhraseIndex : 0;
+        setStatus('🚶 Auto Play started — hear the phrase, then repeat it!');
+        selectPhrase(startIdx);
+    }
+
+    function stopAutoPlay() {
+        _autoPlaying = false;
+        _autoPlayExpectingResult = false;
+
+        if (_autoPlayMicTimer) { clearTimeout(_autoPlayMicTimer); _autoPlayMicTimer = null; }
+        if (Recorder.getIsRecording()) Recorder.stop();
+        if (TTS && TTS.getIsSpeaking()) TTS.stop();
+        _cancelAutoAdvance();
+
+        // Release wake lock
+        if (_wakeLock) { _wakeLock.release().catch(() => {}); _wakeLock = null; }
+
+        // Reset button
+        dom.btnAutoPlay.textContent = '🚶 Auto';
+        dom.btnAutoPlay.classList.remove('btn-auto-active');
+        dom.practiceBar?.classList.remove('auto-play-active');
+
+        setStatus('⏸ Auto Play paused. Tap a phrase or 🎤 to practice manually.');
+    }
+
+    /** Open the mic immediately — called after TTS finishes in auto mode */
+    function _autoPlayOpenMic() {
+        if (!_autoPlaying) return;
+
+        if (!Recorder.isSupported()) {
+            // No mic support — just advance
+            setTimeout(() => { if (_autoPlaying) _autoPlayNext(); }, 1000);
+            return;
+        }
+
+        setStatus('🎤 Your turn — repeat the phrase!');
+
+        // Set recording language
+        if (Recorder.setLanguage) {
+            const langCode = TTS ? TTS.getLangCode(state.lessonData.language) : 'kn-IN';
+            Recorder.setLanguage(langCode);
+        }
+
+        _autoPlayExpectingResult = true;
+
+        // Safety timeout: if no speech detected in 8 s, skip to next
+        _autoPlayMicTimer = setTimeout(() => {
+            if (!_autoPlaying || !_autoPlayExpectingResult) return;
+            _autoPlayExpectingResult = false;
+            if (Recorder.getIsRecording()) Recorder.stop();
+            setStatus('⏭ No speech detected — moving to next phrase…');
+            setTimeout(() => { if (_autoPlaying) _autoPlayNext(); }, 700);
+        }, 8000);
+
+        // Stop any playing TTS then start recording
+        if (TTS && TTS.getIsSpeaking()) TTS.stop();
+        Player.pause();
+        dom.scoreSection.classList.remove('visible');
+        Recorder.start();
+    }
+
+    /** Advance to the next phrase, or stop at end of lesson */
+    function _autoPlayNext() {
+        if (!_autoPlaying) return;
+        const nextIndex = state.currentPhraseIndex + 1;
+        const total     = state.lessonData?.phrases.length || 0;
+
+        if (nextIndex >= total) {
+            stopAutoPlay();
+            setStatus('🎉 Auto Play complete! You practiced all phrases. Great work!');
+            return;
+        }
+        selectPhrase(nextIndex);
     }
 
     /**
@@ -846,20 +969,28 @@ const App = (() => {
         dom.btnListen.classList.add('btn-listen-active');
         setStatus(`🔊 Listening to ${state.lessonData.language}...`);
         
-        // TTS Module handles gracefully switching to Google Audio stream 
-        // if no native Web Speech voice is installed on this OS.
         const textToSpeak = nativeText || transliteration || phrase.english;
         
         TTS.speak(textToSpeak, state.lessonData.language, {
-            rate: 0.85,  // slightly slower for learning
-            transliteration: transliteration, // Used by OpenAI TTS which prefers Latin characters
+            rate: 0.85,
+            transliteration: transliteration,
             onEnd: () => {
                 dom.btnListen.classList.remove('btn-listen-active');
-                setStatus(`🎯 Phrase ${state.currentPhraseIndex + 1} selected — Click 🔊 to listen or 🎤 to record your voice.`);
+                // ── Auto Play hook: open mic automatically after TTS ──
+                if (_autoPlaying) {
+                    _autoPlayOpenMic();
+                } else {
+                    setStatus(`🎯 Phrase ${state.currentPhraseIndex + 1} — Click 🔊 to listen or 🎤 to record.`);
+                }
             },
             onError: (err) => {
                 dom.btnListen.classList.remove('btn-listen-active');
-                setStatus(`⚠️ TTS Error: ${err}`);
+                // Even if TTS fails, open mic in auto mode
+                if (_autoPlaying) {
+                    _autoPlayOpenMic();
+                } else {
+                    setStatus(`⚠️ TTS Error: ${err}`);
+                }
             }
         });
     }
@@ -925,8 +1056,12 @@ const App = (() => {
             dom.btnListen.disabled = true;
         }
         
-        dom.btnPrev.disabled = !enabled || state.currentPhraseIndex <= 0;
-        dom.btnNext.disabled = !enabled || state.currentPhraseIndex >= (state.lessonData?.phrases.length || 0) - 1;
+        dom.btnPrev.disabled     = !enabled || state.currentPhraseIndex <= 0;
+        dom.btnNext.disabled     = !enabled || state.currentPhraseIndex >= (state.lessonData?.phrases.length || 0) - 1;
+        dom.btnAutoPlay.disabled = !enabled;
+
+        // Cache practiceBar reference if not already done
+        if (!dom.practiceBar) dom.practiceBar = document.querySelector('.practice-bar');
     }
 
     /**

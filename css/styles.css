@@ -2334,3 +2334,74 @@ select.form-input option {
         max-width: 92vw;
     }
 }
+
+/* ══════════════════════════════════════════════════════════
+   AUTO PLAY BUTTON & ACTIVE STATE
+   ══════════════════════════════════════════════════════════ */
+
+.btn-auto-play {
+    background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(139,92,246,0.15));
+    border: 1px solid rgba(6,182,212,0.35);
+    color: var(--text-accent);
+    border-radius: var(--radius-full);
+    padding: var(--space-xs) var(--space-md);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    white-space: nowrap;
+    transition: all var(--transition-normal);
+    letter-spacing: 0.02em;
+}
+
+.btn-auto-play:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(6,182,212,0.28), rgba(139,92,246,0.28));
+    border-color: rgba(6,182,212,0.6);
+    box-shadow: 0 0 16px rgba(6,182,212,0.25);
+    transform: translateY(-1px);
+}
+
+/* Active (playing) state */
+.btn-auto-play.btn-auto-active {
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+    border-color: transparent;
+    color: #fff;
+    animation: auto-play-pulse 2s ease-in-out infinite;
+}
+
+@keyframes auto-play-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(6,182,212,0.5); }
+    50%       { box-shadow: 0 0 0 8px rgba(6,182,212,0); }
+}
+
+/* Practice bar glows when auto play is running */
+.practice-bar.auto-play-active {
+    border-color: rgba(6,182,212,0.4);
+    box-shadow: 0 0 24px rgba(6,182,212,0.12);
+}
+
+/* Indicator strip at the top of practice bar */
+.practice-bar.auto-play-active::before {
+    content: '🚶 Auto Play Active';
+    display: block;
+    text-align: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-accent);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid rgba(6,182,212,0.2);
+    margin-bottom: var(--space-xs);
+    animation: auto-play-pulse 2s ease-in-out infinite;
+}
+
+/* Mic is open indicator on the record button */
+.auto-play-active .btn-record {
+    box-shadow: 0 0 0 4px rgba(239,68,68,0.4);
+}
+
+@media (max-width: 600px) {
+    .btn-auto-play {
+        font-size: 0.72rem;
+        padding: var(--space-xs) var(--space-sm);
+    }
+}
