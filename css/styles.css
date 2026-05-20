@@ -2104,3 +2104,233 @@ select.form-input option {
     border: 1px solid var(--bg-glass-border);
     backdrop-filter: blur(12px);
 }
+
+/* ==============================================================
+   MOBILE LAYOUT OVERRIDES — must be at the END of the file
+   so these rules win over all earlier base styles.
+   ============================================================== */
+
+@media (max-width: 900px) {
+
+    /* Force single-column stacked layout — fixes CSS order bug
+       where base .practice-view (defined later) was overriding
+       the earlier media query */
+    .practice-view {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: var(--space-md);
+        overflow: visible;
+    }
+
+    /* Let the page scroll — no fixed heights on the container */
+    .app-main {
+        padding: var(--space-md);
+        min-height: unset;
+        overflow: visible;
+    }
+
+    /* Transcript: full height, let the page scroll (no cap) */
+    .transcript-section {
+        max-height: none !important;
+        height: auto;
+        overflow: visible;
+    }
+
+    .transcript-list {
+        max-height: none !important;
+        overflow: visible;
+    }
+}
+
+@media (max-width: 600px) {
+
+    /* Single-column, natural page scroll */
+    .practice-view {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: var(--space-sm);
+    }
+
+    .video-section {
+        width: 100%;
+    }
+
+    .transcript-section {
+        max-height: none !important;
+        height: auto;
+        border-top: 1px solid var(--bg-glass-border);
+        padding-top: var(--space-md);
+    }
+
+    .transcript-list {
+        max-height: none !important;
+        overflow: visible;
+        padding-right: 0;
+    }
+
+    /* Let the whole page scroll, not inner containers */
+    .app-main {
+        padding: var(--space-sm);
+        min-height: unset;
+        overflow-x: hidden;
+        overflow-y: visible;
+    }
+
+    html, body {
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    /* Header: keep it compact and sticky */
+    .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: var(--space-xs) var(--space-sm);
+        flex-wrap: nowrap;
+        gap: var(--space-xs);
+        justify-content: space-between;
+    }
+
+    .app-logo-text { font-size: 1rem; }
+    .lesson-info   { display: none; }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        overflow-x: auto;
+        flex-shrink: 0;
+    }
+
+    .btn-header {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+        white-space: nowrap;
+    }
+
+    .xp-badge {
+        font-size: 0.68rem;
+        padding: 3px 6px;
+        gap: 3px;
+        white-space: nowrap;
+    }
+
+    .xp-badge-sep { display: none; }
+
+    /* Practice bar — tighter */
+    .practice-bar {
+        padding: var(--space-sm);
+        gap: var(--space-sm);
+        border-radius: var(--radius-md);
+    }
+
+    .practice-phrase-transliteration { font-size: 1.1rem; }
+    .practice-phrase-english         { font-size: 0.8rem; }
+
+    /* Touch-friendly control buttons */
+    .practice-controls {
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: nowrap;
+    }
+
+    .btn-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .btn-record {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    /* Phrase cards — full width, easy to tap */
+    .phrase-card {
+        padding: 10px 12px;
+        border-radius: var(--radius-md);
+    }
+
+    .phrase-transliteration { font-size: 0.95rem; }
+    .phrase-english         { font-size: 0.78rem; }
+    .phrase-kannada         { font-size: 0.72rem; }
+
+    /* Score panel compact */
+    .score-circle {
+        width: 50px;
+        height: 50px;
+        font-size: 1rem;
+    }
+
+    /* Modals: bottom sheet */
+    .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-dialog {
+        max-width: 100%;
+        width: 100%;
+        max-height: 90vh;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        overflow-y: auto;
+    }
+
+    /* Dashboard */
+    .dashboard-view {
+        padding: var(--space-sm);
+        height: auto;
+        overflow: visible;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-md);
+    }
+
+    .dashboard-title { font-size: 1.3rem; }
+
+    .language-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-sm);
+    }
+
+    /* Module cards */
+    .module-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        padding: var(--space-md);
+    }
+
+    .module-actions {
+        width: 100%;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: var(--space-xs);
+    }
+
+    .curriculum-title { font-size: 1.2rem; }
+
+    /* Practice mode card (TTS/generated lessons) */
+    .practice-mode-card {
+        padding: var(--space-md);
+        min-height: 120px;
+    }
+
+    .practice-mode-native  { font-size: 1.5rem; }
+    .practice-mode-translit{ font-size: 1rem; }
+
+    /* Toast: no overflow */
+    .sl-toast {
+        white-space: normal;
+        text-align: center;
+        max-width: 92vw;
+    }
+}
