@@ -590,8 +590,13 @@ const App = (() => {
         state.currentPhraseIndex = index;
         const phrase = state.lessonData.phrases[index];
 
-        // Update transcript highlight
+        // Update transcript highlight.
+        // In Auto Play mode keep the page at the top (controls visible);
+        // the card is highlighted in the list but we don't chase it.
         Transcript.setActive(index);
+        if (_autoPlaying) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         // Update practice display
         updatePracticeDisplay(index);
