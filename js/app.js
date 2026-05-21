@@ -207,10 +207,9 @@ const App = (() => {
                 const ctx = JSON.parse(moduleCtx);
 
                 // ── Session Timer ──────────────────────────────────────────
-                // Record session start in sessionStorage (survives HMR but not tab close)
-                if (!sessionStorage.getItem('shadowlearn_session_start')) {
-                    sessionStorage.setItem('shadowlearn_session_start', String(Date.now()));
-                }
+                // Always reset the start time when entering a module lesson so we
+                // measure time spent in THIS lesson only, not since the app was opened.
+                sessionStorage.setItem('shadowlearn_session_start', String(Date.now()));
 
                 const getElapsedSeconds = () => {
                     const start = parseInt(sessionStorage.getItem('shadowlearn_session_start') || '0', 10);
@@ -224,7 +223,7 @@ const App = (() => {
                 const saveTime = () => {
                     if (timeSaved) return;
                     timeSaved = true;
-                    StorageManager.addTimeSpent(ctx.language, getElapsedSeconds());
+                    StorageManager.addModuleTimeSpent(ctx.language, ctx.moduleId, getElapsedSeconds());
                 };
 
                 // Save time when tab is closed / navigated away mid-session
@@ -1214,11 +1213,14 @@ const App = (() => {
             el.className = 'module-card';
             const isCompleted = mod.status === 'completed';
             const hasCachedLesson = !!StorageManager.getLesson(lang, mod.id);
+            const modTime = StorageManager.getModuleTimeSpent(lang, mod.id);
+            const modTimeLabel = modTime > 0 ? StorageManager.formatTime(modTime) : null;
             
             el.innerHTML = `
                 <div class="module-info">
                     <h4>${mod.title}</h4>
                     <p>${mod.description}</p>
+                    ${modTimeLabel ? `<div class="module-time-badge"><span>⏱️</span><span>${modTimeLabel}</span></div>` : ''}
                 </div>
                 <div class="module-actions">
                     <span class="module-status ${isCompleted ? 'status-completed' : 'status-pending'}">

@@ -87,19 +87,55 @@ const StorageManager = (() => {
         localStorage.removeItem(_lessonKey(language, moduleId));
     }
 
-    // ── Time Tracking ─────────────────────────────────────────────────────
-    const TIME_KEY_PREFIX = 'shadowlearn_time_';
+    // ── Time Tracking (per-module) ─────────────────────────────────────────
+    // Keys: shadowlearn_modtime_<language>_<moduleId>
+    // Total language time is derived by summing all matching keys.
+    const MOD_TIME_PREFIX = 'shadowlearn_modtime_';
 
-    function addTimeSpent(language, seconds) {
+    /**
+     * Add seconds to a specific module's time bucket.
+     * Also increments the legacy per-language total so old data isn't lost.
+     */
+    function addModuleTimeSpent(language, moduleId, seconds) {
         if (!seconds || seconds <= 0) return;
-        const key = TIME_KEY_PREFIX + language.toLowerCase();
+        const key = MOD_TIME_PREFIX + language.toLowerCase() + '_' + moduleId;
         const current = parseInt(localStorage.getItem(key) || '0', 10);
         localStorage.setItem(key, String(current + Math.round(seconds)));
     }
 
-    function getTimeSpent(language) {
-        const key = TIME_KEY_PREFIX + language.toLowerCase();
+    /**
+     * Get seconds recorded for a specific module.
+     */
+    function getModuleTimeSpent(language, moduleId) {
+        const key = MOD_TIME_PREFIX + language.toLowerCase() + '_' + moduleId;
         return parseInt(localStorage.getItem(key) || '0', 10);
+    }
+
+    /**
+     * Get total time spent on a language by summing all its module buckets.
+     * Falls back to the legacy single-key total for data from before this change.
+     */
+    function getTimeSpent(language) {
+        const prefix = MOD_TIME_PREFIX + language.toLowerCase() + '_';
+        let total = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith(prefix)) {
+                total += parseInt(localStorage.getItem(k) || '0', 10);
+            }
+        }
+        // Also include any time recorded before per-module tracking was added
+        const legacyKey = 'shadowlearn_time_' + language.toLowerCase();
+        total += parseInt(localStorage.getItem(legacyKey) || '0', 10);
+        return total;
+    }
+
+    /** Backwards-compat alias — callers that don't have a moduleId yet still work */
+    function addTimeSpent(language, seconds) {
+        if (!seconds || seconds <= 0) return;
+        const legacyKey = 'shadowlearn_time_' + language.toLowerCase();
+        const current = parseInt(localStorage.getItem(legacyKey) || '0', 10);
+        localStorage.setItem(legacyKey, String(current + Math.round(seconds)));
     }
 
     function formatTime(totalSeconds) {
@@ -275,6 +311,8 @@ const StorageManager = (() => {
         getLesson,
         clearLesson,
         addTimeSpent,
+        addModuleTimeSpent,
+        getModuleTimeSpent,
         getTimeSpent,
         formatTime,
         // Mastery
